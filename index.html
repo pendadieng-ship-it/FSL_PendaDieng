@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FSL — Dieng Penda · History in the Streets</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e0e12;--deep:#1c1c2e;--rose:#c0392b;--rose-soft:#e8d5d3;
+  --warm:#f9f5f0;--sand:#ede8e2;--text:#2a2a3a;--muted:#7a7a8c;
+  --white:#ffffff;--accent:#8b1a1a;--gold:#b5924c;
+  --sidebar:52px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--ink);}
+
+/* ── LEFT SIDEBAR NAV ── */
+#sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:var(--sidebar);
+  background:rgba(14,14,18,.92);backdrop-filter:blur(16px);
+  border-right:1px solid rgba(255,255,255,.07);
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;z-index:10000;
+}
+#sidebar .sb-logo{
+  padding:16px 0 12px;
+  font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:700;
+  color:var(--gold);letter-spacing:.12em;writing-mode:vertical-rl;
+  text-orientation:mixed;transform:rotate(180deg);
+  margin-bottom:8px;
+}
+#sidebar .sb-dots{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  flex:1;padding:8px 0;overflow-y:auto;scrollbar-width:none;
+}
+#sidebar .sb-dots::-webkit-scrollbar{display:none;}
+.sdot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.2);border:none;cursor:pointer;
+  transition:all .25s;flex-shrink:0;
+}
+.sdot.active{background:var(--gold);transform:scale(1.4);}
+.sdot:hover{background:rgba(181,146,76,.6);}
+#sidebar .sb-prev,#sidebar .sb-next{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.12);
+  background:transparent;color:rgba(255,255,255,.5);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  transition:all .25s;margin:6px 0;
+}
+#sidebar .sb-prev:hover,#sidebar .sb-next:hover{
+  background:rgba(181,146,76,.2);color:var(--gold);border-color:var(--gold);
+}
+
+/* ── FULLSCREEN BTN bottom-right ── */
+#fs-btn{
+  position:fixed;bottom:18px;right:18px;z-index:10000;
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(14,14,18,.8);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all .25s;
+}
+#fs-btn:hover{background:rgba(181,146,76,.25);color:var(--gold);border-color:var(--gold);}
+
+/* ── SLIDE COUNTER bottom-center ── */
+#counter{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  background:rgba(14,14,18,.7);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);
+  font-size:12px;font-weight:600;letter-spacing:.12em;
+  padding:5px 16px;border-radius:50px;z-index:9998;
+}
+
+/* ── SPEECH PANEL ── */
+#speech-btn{
+  position:fixed;top:16px;right:16px;z-index:10000;
+  background:rgba(14,14,18,.8);backdrop-filter:blur(10px);
+  border:1px solid rgba(181,146,76,.35);border-radius:24px;
+  color:var(--gold);font-family:'DM Sans',sans-serif;font-size:11px;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:7px 16px;cursor:pointer;transition:all .3s;
+}
+#speech-btn:hover{background:rgba(181,146,76,.2);}
+#speech-panel{
+  position:fixed;top:0;right:0;width:400px;height:100vh;
+  background:linear-gradient(160deg,#0e0e12 0%,#1c1c2e 100%);
+  border-left:1px solid rgba(181,146,76,.2);z-index:10001;
+  transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.6);
+}
+#speech-panel.open{transform:translateX(0);}
+.sp-header{
+  padding:24px 24px 16px;border-bottom:1px solid rgba(181,146,76,.15);
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
+}
+.sp-header h3{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.sp-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:22px;cursor:pointer;line-height:1;padding:2px;}
+.sp-close:hover{color:#fff;}
+.sp-title{padding:14px 24px 6px;font-size:10px;letter-spacing:.18em;color:var(--gold);opacity:.55;text-transform:uppercase;}
+.sp-body{flex:1;overflow-y:auto;padding:0 24px 80px;scrollbar-width:thin;scrollbar-color:rgba(181,146,76,.3) transparent;}
+.sp-body p{font-size:14px;line-height:1.85;color:#e0ceb8;margin-bottom:14px;}
+.sp-body p strong{color:var(--gold);}
+
+/* ── DECK & SLIDES ── */
+.deck{
+  position:fixed;left:var(--sidebar);top:0;right:0;bottom:0;
+}
+.slide{
+  position:absolute;inset:0;opacity:0;pointer-events:none;
+  transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1);
+  transform:translateY(18px) scale(.99);overflow:hidden;background:var(--white);
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateY(0) scale(1);}
+
+/* helpers */
+.lbl{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--rose);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.lbl::before{content:'';width:18px;height:2px;background:var(--rose);border-radius:1px;flex-shrink:0;}
+.pill-d{display:inline-flex;align-items:center;padding:6px 15px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);}
+.pill-l{display:inline-flex;align-items:center;padding:6px 15px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--rose-soft);color:var(--accent);}
+.chip{background:var(--deep);color:#b0b0c4;padding:5px 13px;border-radius:50px;font-size:12px;font-weight:600;}
+.abs{position:absolute;inset:0;}
+.cover{width:100%;height:100%;object-fit:cover;}
+.center{display:flex;align-items:center;justify-content:center;}
+@keyframes up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.slide.active h1,.slide.active h2{animation:up .45s ease both;}
+.slide.active .a1{animation:up .42s .06s ease both;}
+.slide.active .a2{animation:up .42s .14s ease both;}
+.slide.active .a3{animation:up .42s .22s ease both;}
+.slide.active .a4{animation:up .42s .30s ease both;}
+
+/* dark reflection slides — force z-index on inner content */
+.refl-inner{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:10;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LEFT SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="sb-logo">FSL 2026</div>
+  <button class="sb-prev" onclick="go(-1)" title="Previous">▲</button>
+  <div class="sb-dots" id="sb-dots"></div>
+  <button class="sb-next" onclick="go(1)" title="Next">▼</button>
+</nav>
+
+<!-- ══ SPEECH BUTTON ══ -->
+<button id="speech-btn" onclick="toggleSpeech()">🎤 Speech</button>
+
+<!-- ══ SPEECH PANEL ══ -->
+<div id="speech-panel">
+  <div class="sp-header">
+    <h3>Speaker Notes</h3>
+    <button class="sp-close" onclick="toggleSpeech()">✕</button>
+  </div>
+  <div class="sp-title" id="sp-label">Slide 1</div>
+  <div class="sp-body" id="sp-body"></div>
+</div>
+
+<!-- ══ DECK ══ -->
+<div class="deck">
+
+<!-- S1 COVER -->
+<div class="slide active" id="s1" style="background:var(--deep);">
+  <div class="abs" style="overflow:hidden;">
+    <img src="img/centrostorico.jpg" class="cover" style="opacity:.15;filter:saturate(.35);">
+    <div class="abs" style="background:linear-gradient(135deg,rgba(14,14,18,.96) 38%,rgba(28,28,46,.88) 100%);"></div>
+  </div>
+  <div class="abs" style="display:grid;grid-template-columns:1fr 1fr;">
+    <div style="padding:60px 58px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:40px;">
+        <img src="img/isrec.jpg" style="width:48px;height:48px;object-fit:contain;border-radius:10px;background:#fff;padding:4px;">
+        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.38);letter-spacing:.1em;text-transform:uppercase;">ISREC · SIT · Biblioteca Gambalunga</span>
+      </div>
+      <span class="pill-d" style="align-self:flex-start;margin-bottom:20px;">✦ FSL · Work-Based Learning · A.Y. 2025/2026</span>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(52px,6.5vw,84px);font-weight:700;color:#fff;line-height:.92;letter-spacing:-.03em;margin-bottom:20px;">History<br><span style="color:var(--gold);">in the Streets</span></h1>
+      <p style="font-size:15px;color:rgba(255,255,255,.48);font-weight:300;line-height:1.75;max-width:380px;margin-bottom:36px;">Public history, GIS and StoryMaps: three weeks in Rimini between archives, digital maps and urban onomastics.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="pill-d">Rimini · Via Gambalunga 27</span>
+        <span class="pill-d">02/02 – 21/02/2026</span>
+        <span class="pill-d">Public History · GIS</span>
+      </div>
+    </div>
+    <div class="center" style="position:relative;z-index:2;">
+      <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:36px 40px;min-width:270px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.3);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;">Student</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:#fff;margin-bottom:22px;">Dieng Penda</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px;">Class</div>
+        <div style="font-size:16px;color:rgba(255,255,255,.82);font-weight:600;margin-bottom:18px;">4° G</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px;">School</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7);font-weight:500;line-height:1.4;margin-bottom:18px;">ITTS «Belluzzi – Da Vinci»<br>Rimini</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px;">Host Institutions</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.55;">ISREC RN · Biblioteca Gambalunga<br>Municipality of Rimini (SIT)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S2 THE PROJECT -->
+<div class="slide" id="s2" style="display:grid;grid-template-columns:1fr 1fr;">
+  <div style="padding:64px 56px;display:flex;flex-direction:column;justify-content:center;background:var(--warm);">
+    <div class="lbl a1">— The Project</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:50px;color:var(--ink);line-height:1.04;margin-bottom:16px;">«History<br>in the Streets»</h2>
+    <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:26px;max-width:400px;" class="a2">A <strong style="color:var(--text);">public history</strong> FSL project transforming Rimini's street directory into an interactive journey. The goal: classify street dedications by historical category and map them in a public <strong style="color:var(--text);">digital StoryMap</strong> on the Municipality's SIT portal.</p>
+    <div style="display:flex;flex-direction:column;gap:11px;" class="a3">
+      <div style="display:flex;align-items:flex-start;gap:12px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);line-height:1.55;">Classification of street names by historical category</div></div>
+      <div style="display:flex;align-items:flex-start;gap:12px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);line-height:1.55;">Biographical and iconographic research on historical figures</div></div>
+      <div style="display:flex;align-items:flex-start;gap:12px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);line-height:1.55;">Digital database with geolocation on ArcGIS Online</div></div>
+      <div style="display:flex;align-items:flex-start;gap:12px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);line-height:1.55;">Summary video for the regional competition «Quante storie nella Storia»</div></div>
+    </div>
+  </div>
+  <div style="padding:64px 46px;display:flex;flex-direction:column;justify-content:center;background:var(--sand);">
+    <div class="lbl">— Institutions &amp; Supervisors</div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px;">
+      <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;" class="a1">
+        <img src="img/isrec.jpg" style="width:54px;height:54px;object-fit:contain;border-radius:8px;background:#f5f5f5;padding:4px;flex-shrink:0;">
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">ISREC RN</div><div style="font-size:12px;color:var(--muted);">Coordination and historical research</div><div style="font-size:12px;color:var(--rose);font-weight:600;margin-top:2px;">Tutor: Alberto Gagliardo</div></div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;" class="a2">
+        <img src="img/biblio.jpg" style="width:54px;height:54px;object-fit:contain;border-radius:8px;background:#f5f5f5;padding:5px;flex-shrink:0;">
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Biblioteca Civica Gambalunga</div><div style="font-size:12px;color:var(--muted);">Archival and bibliographic research</div><div style="font-size:12px;color:var(--rose);font-weight:600;margin-top:2px;">Contact: Gianluca Calbucci</div></div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;" class="a3">
+        <div style="width:54px;height:54px;border-radius:8px;background:var(--rose-soft);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🗺️</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Municipality of Rimini — SIT</div><div style="font-size:12px;color:var(--muted);">GIS data entry and StoryMaps</div><div style="font-size:12px;color:var(--rose);font-weight:600;margin-top:2px;">Contact: Alberto Vanni Lazzari</div></div>
+      </div>
+    </div>
+    <div style="background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.18);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--accent);line-height:1.65;" class="a4">
+      📅 <strong>02/02/2026 – 21/02/2026</strong> · 90 hours total<br>📍 Via Gambalunga 27, Rimini (main location)
+    </div>
+  </div>
+</div>
+
+<!-- S3 DIGITAL TOOLS -->
+<div class="slide" id="s3" style="background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 60px;">
+  <div class="lbl" style="margin-bottom:6px;">— Platforms &amp; Tools</div>
+  <h2 style="font-family:'Cormorant Garamond',serif;font-size:48px;color:var(--ink);text-align:center;margin-bottom:32px;">Digital Tools Used</h2>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;width:100%;max-width:1020px;">
+    <div style="background:var(--warm);border:1px solid var(--sand);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;" class="a1">
+      <div style="width:52px;height:52px;border-radius:12px;background:rgba(192,57,43,.1);display:flex;align-items:center;justify-content:center;font-size:26px;">🗺️</div>
+      <div><div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px;">ArcGIS Online<br><span style="color:var(--rose);font-size:12px;">+ Story Maps</span></div><div style="font-size:12px;color:var(--muted);line-height:1.6;">ESRI platform to geolocate street names, trace road segments and publish the interactive StoryMap on the Municipality's portal.</div></div>
+    </div>
+    <div style="background:var(--warm);border:1px solid var(--sand);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;" class="a2">
+      <div style="width:52px;height:52px;border-radius:12px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:26px;">📊</div>
+      <div><div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px;">Google Sheets</div><div style="font-size:12px;color:var(--muted);line-height:1.6;">Main database for data collection, organisation and filtering. In week 3, I created the statistical charts for the StoryMap's statistics section.</div></div>
+    </div>
+    <div style="background:var(--warm);border:1px solid var(--sand);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;" class="a3">
+      <div style="width:52px;height:52px;border-radius:12px;background:rgba(33,117,155,.12);display:flex;align-items:center;justify-content:center;font-size:26px;">🌐</div>
+      <div><div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px;">WordPress</div><div style="font-size:12px;color:var(--muted);line-height:1.6;">CMS for the ISREC RN website. I edited and updated institutional web pages through the professional back-end interface.</div></div>
+    </div>
+    <div style="background:var(--warm);border:1px solid var(--sand);border-radius:18px;padding:18px 15px;display:flex;flex-direction:column;align-items:center;gap:10px;" class="a4">
+      <img src="img/categoria.jpg" style="width:100%;height:150px;object-fit:contain;border-radius:10px;">
+      <div style="font-size:12px;font-weight:700;color:var(--ink);text-align:center;">Street names by category</div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;line-height:1.5;">Personalities <strong>53.7%</strong> · Geography <strong>25.1%</strong><br>Local toponym <strong>9.6%</strong>…</div>
+    </div>
+  </div>
+</div>
+
+<!-- S4 WEEK 1 ACTIVITIES -->
+<div class="slide" id="s4" style="display:grid;grid-template-columns:280px 1fr;">
+  <div style="position:relative;overflow:hidden;">
+    <img src="img/isrec.jpg" class="abs cover" style="opacity:.28;filter:saturate(.25);">
+    <div class="abs" style="background:linear-gradient(to top,var(--deep) 32%,rgba(28,28,46,.82) 100%);"></div>
+    <div class="abs" style="top:-10px;left:8px;font-family:'Cormorant Garamond',serif;font-size:150px;font-weight:700;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;">1</div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:36px 30px;z-index:2;">
+      <span class="pill-d" style="margin-bottom:14px;display:inline-flex;">Week 1</span>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;line-height:1.1;margin-bottom:8px;">Project<br>Launch</h2>
+      <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;">📅 2 – 8 February 2026</div>
+      <div style="background:rgba(181,146,76,.12);border-left:3px solid var(--gold);padding:11px 13px;border-radius:0 10px 10px 0;font-size:13px;color:rgba(255,255,255,.65);line-height:1.65;font-style:italic;">«Exciting to see how technology can breathe new life into local history.»</div>
+    </div>
+  </div>
+  <div style="padding:44px 50px;display:flex;flex-direction:column;justify-content:center;background:#fff;">
+    <div class="lbl" style="margin-bottom:18px;">— Activities</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:22px;">
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a1">
+        <div style="font-size:22px;margin-bottom:8px;">🏛️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Introduction to the project</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Overview of the collaboration between the three institutions. Introduction to historical research methodology and ArcGIS / StoryMaps software.</div>
+      </div>
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a2">
+        <div style="font-size:22px;margin-bottom:8px;">🗃️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Data entry</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Digital database for the StoryMap. Research of biographies and iconographic material about historical personalities of the territory.</div>
+      </div>
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a3">
+        <div style="font-size:22px;margin-bottom:8px;">📚</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Physical archives</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Research in the archives of the Historical Institute and the Gambalunga Library. Consultation of historical texts and paper registers.</div>
+      </div>
+      <div style="background:rgba(192,57,43,.05);border-radius:14px;padding:16px;border:1px solid rgba(192,57,43,.14);" class="a4">
+        <div style="font-size:22px;margin-bottom:8px;">⚠️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Challenges</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Difficulty finding photographic material for some figures (e.g. Silvio Cenci). Physical archive research is very time-consuming.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;">
+      <span class="chip">ArcGIS Online</span><span class="chip">Google Sheets</span><span class="chip">Treccani</span><span class="chip">ANPI</span><span class="chip">Quirinale.it</span>
+    </div>
+  </div>
+</div>
+
+<!-- S5 WEEK 1 REFLECTION — FIXED: refl-inner with z-index:10 -->
+<div class="slide" id="s5" style="background:#1a1428;overflow:hidden;">
+  <img src="img/centrostorico.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.2;filter:saturate(.2);">
+  <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,20,40,.97) 40%,rgba(44,22,22,.92) 100%);"></div>
+  <div class="refl-inner">
+    <div style="max-width:740px;text-align:center;padding:50px 40px;">
+      <div class="lbl" style="justify-content:center;margin-bottom:20px;color:var(--gold);">— Personal Reflection · Week 1</div>
+      <div style="display:inline-block;background:rgba(181,146,76,.18);border:1px solid rgba(181,146,76,.4);border-radius:12px;padding:8px 20px;font-size:12px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:26px;">✦ Keyword: DISCOVERY</div>
+      <blockquote style="font-family:'Cormorant Garamond',serif;font-size:clamp(22px,2.6vw,34px);color:#fff;line-height:1.55;font-style:italic;margin-bottom:30px;">«The experience is stimulating and I am enjoying it because it allows me to see how <em style="color:var(--gold);">technology (GIS)</em> can breathe new life into <em style="color:var(--gold);">local history</em>, making it accessible to everyone through interactive maps.»</blockquote>
+      <p style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.8;max-width:560px;margin:0 auto;">Working on themes like the partisan struggle and the colonial past through digital maps helped me understand how <strong style="color:rgba(255,255,255,.8);">urban geography</strong> is deeply linked to historical events. Street names are not just labels — they are small monuments.</p>
+    </div>
+  </div>
+</div>
+
+<!-- S6 WEEK 2 ACTIVITIES -->
+<div class="slide" id="s6" style="display:grid;grid-template-columns:280px 1fr;">
+  <div style="position:relative;overflow:hidden;">
+    <img src="img/biblio.jpg" class="abs cover" style="opacity:.35;filter:saturate(.2);">
+    <div class="abs" style="background:linear-gradient(to top,var(--ink) 30%,rgba(14,14,18,.82) 100%);"></div>
+    <div class="abs" style="top:-10px;left:8px;font-family:'Cormorant Garamond',serif;font-size:150px;font-weight:700;color:rgba(255,255,255,.03);line-height:1;pointer-events:none;">2</div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:36px 30px;z-index:2;">
+      <span class="pill-d" style="margin-bottom:14px;display:inline-flex;">Week 2</span>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;line-height:1.1;margin-bottom:8px;">Mapping &amp;<br>Conference</h2>
+      <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;">📅 9 – 14 February 2026</div>
+      <div style="background:rgba(181,146,76,.12);border-left:3px solid var(--gold);padding:11px 13px;border-radius:0 10px 10px 0;font-size:13px;color:rgba(255,255,255,.65);line-height:1.65;font-style:italic;">«The conference helped me put the names I was entering into context.»</div>
+    </div>
+  </div>
+  <div style="padding:44px 50px;display:flex;flex-direction:column;justify-content:center;background:#fff;">
+    <div class="lbl" style="margin-bottom:18px;">— Activities</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:22px;">
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a1">
+        <div style="font-size:22px;margin-bottom:8px;">📈</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Progress at SIT</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Presentation of project progress. Technical training on geographic tracing of streets in ArcGIS — requires careful matching of historical names to current cartography.</div>
+      </div>
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a2">
+        <div style="font-size:22px;margin-bottom:8px;">🎖️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Anti-fascist Memories</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Data entry for the "Anti-fascist Memories" category. Implementation of the "Credits" section of the project on the StoryMap.</div>
+      </div>
+      <div style="background:rgba(192,57,43,.06);border-radius:14px;padding:16px;border:1px solid rgba(192,57,43,.15);" class="a3">
+        <div style="font-size:22px;margin-bottom:8px;">🎤</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Conference – World Wars</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Lecture on the World Wars with Year 5 classes, held by historian Enrico Miletto. I created and edited a summary video for the regional competition.</div>
+      </div>
+      <div style="background:rgba(192,57,43,.05);border-radius:14px;padding:16px;border:1px solid rgba(192,57,43,.14);" class="a4">
+        <div style="font-size:22px;margin-bottom:8px;">⚠️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Technical challenges</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Precise tracing of road segments requires great attention to match historical onomastics with current digital cartography.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;">
+      <span class="chip">ArcGIS / StoryMap</span><span class="chip">Video editing</span><span class="chip">Rimini street directory</span><span class="chip">Treccani</span>
+    </div>
+  </div>
+</div>
+
+<!-- S7 MILETTO CONFERENCE -->
+<div class="slide" id="s7" style="display:grid;grid-template-columns:1fr 1fr;">
+  <div style="padding:64px 54px;display:flex;flex-direction:column;justify-content:center;background:var(--warm);">
+    <div class="lbl a1">— Special Event · Week 2</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:48px;color:var(--ink);line-height:1.05;margin-bottom:16px;" class="a2">The Miletto<br>Conference</h2>
+    <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:26px;max-width:400px;" class="a3">A special lecture open to Year 5 classes by historian Enrico Miletto: an in-depth discussion on the effects and consequences of <strong style="color:var(--text);">World War II</strong> on Rimini. I was fortunate to participate as the only lower-year student.</p>
+    <div style="display:flex;flex-direction:column;gap:11px;" class="a4">
+      <div style="display:flex;align-items:flex-start;gap:11px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);">Speaker: <strong>Enrico Miletto</strong>, contemporary history expert</div></div>
+      <div style="display:flex;align-items:flex-start;gap:11px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);">Extraordinary participation alongside Year 5 classes</div></div>
+      <div style="display:flex;align-items:flex-start;gap:11px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose);margin-top:7px;flex-shrink:0;"></div><div style="font-size:14px;color:var(--text);">I produced and edited the summary video for the competition</div></div>
+      <div style="margin-top:8px;"><span class="pill-l">Contribution to «Quante storie nella Storia» competition</span></div>
+    </div>
+  </div>
+  <div style="position:relative;overflow:hidden;">
+    <img src="img/centrostorico.jpg" class="cover" style="opacity:.9;">
+    <div class="abs" style="background:linear-gradient(to right,rgba(249,245,240,.1),rgba(14,14,18,.6));"></div>
+    <div style="position:absolute;bottom:24px;left:24px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:14px;padding:14px 18px;max-width:240px;">
+      <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">🗺️ City Plan — Rimini</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.55;">The historic centre we worked on: every street tells the story of real people.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S8 WEEK 2 REFLECTION — FIXED -->
+<div class="slide" id="s8" style="background:#120c1e;overflow:hidden;">
+  <img src="img/biblio.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.16;filter:saturate(.15);">
+  <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(18,12,30,.97) 40%,rgba(44,14,14,.92) 100%);"></div>
+  <div class="refl-inner">
+    <div style="max-width:740px;text-align:center;padding:50px 40px;">
+      <div class="lbl" style="justify-content:center;margin-bottom:20px;color:var(--gold);">— Personal Reflection · Week 2</div>
+      <div style="display:inline-block;background:rgba(181,146,76,.18);border:1px solid rgba(181,146,76,.4);border-radius:12px;padding:8px 20px;font-size:12px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:26px;">✦ Keyword: CONNECTION</div>
+      <blockquote style="font-family:'Cormorant Garamond',serif;font-size:clamp(21px,2.4vw,32px);color:#fff;line-height:1.55;font-style:italic;margin-bottom:30px;">«I found the conference <em style="color:var(--gold);">extremely engaging</em>. I particularly enjoyed expressing my <em style="color:var(--gold);">creativity by making the video</em>, making this FSL experience not just about archiving but also about active communication.»</blockquote>
+      <p style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.8;max-width:540px;margin:0 auto;">Before the conference, I was entering names into a database. Afterwards, I was entering <em style="color:rgba(255,255,255,.8);">people</em>. Every name became connected to real events, real suffering, and real courage.</p>
+    </div>
+  </div>
+</div>
+
+<!-- S9 WEEK 3 ACTIVITIES -->
+<div class="slide" id="s9" style="display:grid;grid-template-columns:280px 1fr;">
+  <div style="position:relative;overflow:hidden;background:var(--rose);">
+    <img src="img/categoria.jpg" class="abs cover" style="opacity:.1;filter:saturate(0);">
+    <div class="abs" style="background:linear-gradient(to top,rgba(192,57,43,.99) 35%,rgba(139,26,26,.88) 100%);"></div>
+    <div class="abs" style="top:-10px;left:8px;font-family:'Cormorant Garamond',serif;font-size:150px;font-weight:700;color:rgba(0,0,0,.06);line-height:1;pointer-events:none;">3</div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:36px 30px;z-index:2;">
+      <span style="display:inline-flex;padding:5px 14px;border-radius:50px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.18);color:#fff;margin-bottom:14px;">Week 3</span>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#fff;line-height:1.1;margin-bottom:8px;">Revision &amp;<br>Statistics</h2>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px;">📅 16 – 21 February 2026</div>
+      <div style="background:rgba(255,255,255,.15);border-left:3px solid rgba(255,255,255,.7);padding:11px 13px;border-radius:0 10px 10px 0;font-size:13px;color:rgba(255,255,255,.85);line-height:1.65;font-style:italic;">«A database is only useful if the data is correct and well-organised.»</div>
+    </div>
+  </div>
+  <div style="padding:44px 50px;display:flex;flex-direction:column;justify-content:center;background:#fff;">
+    <div class="lbl" style="margin-bottom:18px;">— Activities</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:22px;">
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a1">
+        <div style="font-size:22px;margin-bottom:8px;">🔧</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Profile cards</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Meeting at SIT for technical implementation of profile cards for each street name. Study of technical limitations regarding attachments.</div>
+      </div>
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a2">
+        <div style="font-size:22px;margin-bottom:8px;">✅</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Full data review</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Complete revision of all entered data to correct errors. Completion of the Sources and Bibliography page for the StoryMap.</div>
+      </div>
+      <div style="background:rgba(52,168,83,.07);border-radius:14px;padding:16px;border:1px solid rgba(52,168,83,.2);" class="a3">
+        <div style="font-size:22px;margin-bottom:8px;">📊</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Statistics &amp; Charts</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Used Google Sheets to filter the street list and create the charts for the "Statistics &amp; Charts" section of the StoryMap.</div>
+      </div>
+      <div style="background:var(--warm);border-radius:14px;padding:16px;border:1px solid var(--sand);" class="a4">
+        <div style="font-size:22px;margin-bottom:8px;">📌</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">Workaround solution</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">Unable to automatically link all profile cards: manual revision strategy adopted — a lesson in professional flexibility.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;">
+      <span class="chip">Google Sheets</span><span class="chip">ArcGIS</span><span class="chip">Rimini street directory</span><span class="chip">Bibliographic sources</span>
+    </div>
+  </div>
+</div>
+
+<!-- S10 WEEK 3 REFLECTION — FIXED -->
+<div class="slide" id="s10" style="display:grid;grid-template-columns:1fr 1fr;">
+  <div style="position:relative;overflow:hidden;background:#0e0e12;">
+    <img src="img/centrostorico.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.17;filter:saturate(.22);">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,14,18,.97) 38%,rgba(28,28,46,.92) 100%);"></div>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;padding:52px 46px;z-index:10;">
+      <div>
+        <div class="lbl" style="margin-bottom:18px;color:var(--gold);">— Reflection · Week 3</div>
+        <div style="display:inline-block;background:rgba(181,146,76,.18);border:1px solid rgba(181,146,76,.4);border-radius:12px;padding:7px 18px;font-size:12px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:20px;">✦ Keyword: PRECISION</div>
+        <blockquote style="font-family:'Cormorant Garamond',serif;font-size:clamp(19px,2vw,28px);color:#fff;line-height:1.55;font-style:italic;margin-bottom:22px;">«This final phase taught me the importance of <em style="color:var(--gold);">precision</em>: a database is only useful if the data is correct and well-organised.»</blockquote>
+        <p style="font-size:14px;color:rgba(255,255,255,.48);line-height:1.75;max-width:360px;">Precision in historical work is not just about avoiding mistakes — it's about <em style="color:rgba(255,255,255,.75);">respecting the people</em> whose stories you are telling.</p>
+      </div>
+    </div>
+  </div>
+  <div style="background:var(--warm);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 40px;gap:18px;">
+    <div style="text-align:center;">
+      <div class="lbl" style="justify-content:center;margin-bottom:6px;">— Data Results</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--ink);font-weight:600;line-height:1.2;">Rimini's street names<br>by category</div>
+    </div>
+    <img src="img/categoria.jpg" style="width:100%;max-width:300px;height:auto;border-radius:14px;box-shadow:0 8px 28px rgba(14,14,18,.12);">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:300px;">
+      <div style="background:#fff;border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#4c72b0;flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);"><strong>Personalities</strong><br>53.7%</div></div>
+      <div style="background:#fff;border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#9e9e9e;flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);"><strong>Geography</strong><br>25.1%</div></div>
+      <div style="background:#fff;border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#5ba0cf;flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);"><strong>Local toponym</strong><br>9.6%</div></div>
+      <div style="background:#fff;border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#77b87a;flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);"><strong>Science</strong><br>5.5%</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- S11 HISTORIC CENTRE MAP -->
+<div class="slide" id="s11" style="position:relative;overflow:hidden;background:var(--ink);">
+  <img src="img/centrostorico.jpg" class="abs cover" style="opacity:.88;">
+  <div class="abs" style="background:linear-gradient(to right,rgba(14,14,18,.94) 0%,rgba(14,14,18,.25) 48%,transparent 72%);"></div>
+  <div class="abs" style="display:flex;align-items:center;padding:70px 64px;">
+    <div style="max-width:380px;position:relative;z-index:2;">
+      <div class="lbl" style="margin-bottom:14px;">— The Territory</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:50px;color:#fff;line-height:1.0;margin-bottom:18px;">Rimini's<br>Historic<br>Centre</h2>
+      <p style="font-size:15px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:24px;">The General Urban Plan of Rimini highlights the historic centre we worked on. Every street has a story: our StoryMap tells it — making history accessible to everyone.</p>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:11px;"><div style="width:11px;height:11px;border-radius:3px;background:#e63946;flex-shrink:0;"></div><div style="font-size:13px;color:rgba(255,255,255,.7);">Destroyed / damaged buildings</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:11px;"><div style="width:11px;height:11px;border-radius:3px;background:#2a9d8f;flex-shrink:0;"></div><div style="font-size:13px;color:rgba(255,255,255,.7);">Public and private green areas</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:11px;"><div style="width:11px;height:11px;border-radius:3px;background:#e9c46a;flex-shrink:0;"></div><div style="font-size:13px;color:rgba(255,255,255,.7);">Demolitions and reconstructions</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:11px;"><div style="width:11px;height:11px;border-radius:3px;background:#c0392b;flex-shrink:0;"></div><div style="font-size:13px;color:rgba(255,255,255,.7);">National monuments</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S12 FINAL REFLECTION + EVALUATION -->
+<div class="slide" id="s12" style="display:grid;grid-template-columns:1fr 1fr;">
+  <div style="padding:52px 48px;display:flex;flex-direction:column;justify-content:center;background:var(--warm);">
+    <div class="lbl a1">— Final Reflection</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:44px;color:var(--ink);line-height:1.04;margin-bottom:22px;">What I<br>Learned</h2>
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div style="background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;" class="a1">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✅</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;">Technology serving history</div><div style="font-size:12px;color:var(--muted);line-height:1.6;">GIS and StoryMaps make historical heritage accessible to everyone, not just academics.</div></div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;" class="a2">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✅</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;">Historical method &amp; sources</div><div style="font-size:12px;color:var(--muted);line-height:1.6;">Greater awareness of critical thinking and source evaluation in historical research.</div></div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;" class="a3">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✅</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;">Creativity &amp; communication</div><div style="font-size:12px;color:var(--muted);line-height:1.6;">The conference video let me express creativity within a serious professional project.</div></div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;" class="a4">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✅</div>
+        <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;">Precision in data management</div><div style="font-size:12px;color:var(--muted);line-height:1.6;">A database is only useful if the data is correct, complete and well-structured.</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:52px 44px;display:flex;flex-direction:column;justify-content:center;background:var(--sand);">
+    <div class="lbl" style="margin-bottom:16px;">— Challenges &amp; Evaluation</div>
+    <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:22px;">
+      <div style="background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:11px;" class="a1">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(192,57,43,.1);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">⚙️</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">Technical difficulties with automatic attachment linking: manual strategy adopted as a workaround solution.</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:11px;" class="a2">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(192,57,43,.1);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🔍</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">Finding photographic material for lesser-documented historical figures (e.g. Silvio Cenci).</div>
+      </div>
+    </div>
+    <div style="background:var(--rose);border-radius:18px;padding:20px 22px;" class="a3">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:12px;">Final Evaluation — FSL 2025/2026</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:11px;">
+        <div style="background:rgba(255,255,255,.12);border-radius:11px;padding:13px 7px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:700;line-height:1;">4/4</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;line-height:1.3;">Company<br>Tutor</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:11px;padding:13px 7px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:700;line-height:1;">4/4</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;line-height:1.3;">School<br>Tutor</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:11px;padding:13px 7px;text-align:center;">
+          <div style="font-size:20px;line-height:1.2;">⭐⭐</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;line-height:1.3;">Experience<br>Rating</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:9px;padding:10px 13px;text-align:center;">
+        <div style="font-size:13px;color:rgba(255,255,255,.9);font-weight:600;">🏆 Excellent · Constructive · Highly engaging</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S13 THANK YOU -->
+<div class="slide" id="s13" style="background:var(--ink);position:relative;overflow:hidden;">
+  <img src="img/centrostorico.jpg" class="abs cover" style="opacity:.08;filter:saturate(0);">
+  <div class="abs" style="background:radial-gradient(ellipse at center,rgba(192,57,43,.12) 0%,rgba(14,14,18,.97) 65%);"></div>
+  <div class="abs" style="pointer-events:none;display:flex;align-items:center;justify-content:center;">
+    <div style="position:relative;width:0;height:0;">
+      <div style="position:absolute;width:280px;height:280px;border-radius:50%;border:1px solid rgba(181,146,76,.06);transform:translate(-50%,-50%);"></div>
+      <div style="position:absolute;width:520px;height:520px;border-radius:50%;border:1px solid rgba(181,146,76,.04);transform:translate(-50%,-50%);"></div>
+      <div style="position:absolute;width:760px;height:760px;border-radius:50%;border:1px solid rgba(181,146,76,.02);transform:translate(-50%,-50%);"></div>
+    </div>
+  </div>
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;">
+    <div style="text-align:center;padding:50px 40px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(181,146,76,.12);border:1px solid rgba(181,146,76,.25);color:var(--gold);padding:7px 18px;border-radius:50px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:28px;">✦ End of presentation</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(66px,9vw,108px);font-weight:700;color:#fff;line-height:.88;letter-spacing:-.03em;margin-bottom:16px;">Thank<span style="color:var(--gold);"> you</span></h2>
+      <p style="font-size:16px;color:rgba(255,255,255,.38);letter-spacing:.05em;margin-bottom:18px;">I am happy to answer any questions.</p>
+      <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.8;max-width:480px;margin:0 auto 36px;">Special thanks to <strong style="color:rgba(255,255,255,.8);">Alberto Gagliardo, Gianluca Calbucci, Alberto Vanni Lazzari</strong> and all the staff at ISREC, Gambalunga Library and SIT.</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:22px;color:rgba(255,255,255,.82);margin-bottom:6px;">Dieng Penda — Class 4° G</p>
+      <p style="font-size:13px;color:rgba(255,255,255,.3);letter-spacing:.06em;margin-bottom:26px;">ITTS «Belluzzi – Da Vinci» · Rimini · A.Y. 2025/2026</p>
+      <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:11px 22px;border-radius:50px;font-size:13px;color:rgba(255,255,255,.38);">
+        FSL at <strong style="color:var(--gold);">ISREC · SIT · Biblioteca Gambalunga</strong> · Feb 2026
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ══ FULLSCREEN BTN (bottom-right) ══ -->
+<button id="fs-btn" onclick="toggleFS()" title="Fullscreen">⛶</button>
+
+<!-- ══ COUNTER ══ -->
+<div id="counter">1 / 13</div>
+
+<script>
+// ── SPEECHES ──
+const speeches = [
+  {label:"Slide 1 — Cover", text:`<p>Good morning, everyone. My name is <strong>Dieng Penda</strong>, I am in class 4°G at the ITTS Belluzzi-Da Vinci in Rimini.</p><p>For my FSL this year, I spent three weeks at the Historical Institute of the Resistance and Contemporary History of the Province of Rimini — known as ISREC — working alongside the Gambalunga Library and the SIT office of the Municipality of Rimini.</p><p>The title of the project is <strong>"History in the Streets"</strong>, and it is about exploring what the street names of Rimini tell us about the city's past.</p>`},
+  {label:"Slide 2 — The Project", text:`<p>The project is called "History in the Streets" and it is a <strong>public history</strong> initiative — meaning history made accessible to everyone, not just academics.</p><p>The idea is simple but powerful: Rimini's street directory contains hundreds of names dedicated to historical figures, places, and events. Our task was to classify each street name by category, research the people or places behind the names, and then place them on an interactive digital map using <strong>ArcGIS and StoryMaps</strong>.</p><p>The final result will be published on the Municipality of Rimini's SIT portal, where any citizen can explore it.</p><p>We also produced a short summary video for a regional competition called <strong>"Quante storie nella Storia"</strong> — How Many Stories in History.</p>`},
+  {label:"Slide 3 — Digital Tools", text:`<p>During the three weeks, I worked with three main digital tools.</p><p>The first was <strong>ArcGIS Online</strong> with its Story Maps feature — this is a professional GIS platform by Esri that I used to geolocate every street name, trace the actual road segments on the map, and build the interactive StoryMap that will be published online.</p><p>The second was <strong>Google Sheets</strong>, which served as our shared database. I used it to collect and organise all the data — names, categories, biographies, image sources — and in the third week I used it to create statistical charts for the StoryMap.</p><p>The third tool was <strong>WordPress</strong>, the CMS of the ISREC website. I worked on the back-end to edit and update some institutional pages — a completely new experience for me.</p>`},
+  {label:"Slide 4 — Week 1 Activities", text:`<p>The first week began with an introduction to the project and the three partner institutions. My tutors explained the historical research methodology and walked me through ArcGIS and StoryMaps for the first time.</p><p>From day two, I started the <strong>data entry</strong>: I searched for biographies of historical figures whose names appear on Rimini's streets, and looked for photographs in physical archives and on trusted websites like ANPI, Treccani, and Quirinale.it.</p><p>Working in <strong>physical archives</strong> at the Gambalunga Library was a completely different experience from digital research. You have to be patient, because the results are never guaranteed.</p><p>One of the first challenges I faced was finding photographic material. For some figures, like <strong>Silvio Cenci</strong>, no photographs existed at all — which taught me early on that historical research is never straightforward.</p>`},
+  {label:"Slide 5 — Reflection Week 1", text:`<p>My keyword for the first week is <strong>Discovery</strong>.</p><p>Before this experience, I never really thought about the meaning behind street names. They were just labels on a map. But during this week, I started to see them differently — as small monuments, as choices a community made to honour someone.</p><p>Every time I researched a new name, I felt like I was opening a door into a story I had never heard before. Discovering how <strong>GIS technology</strong> can bring this history to life for everyone was genuinely exciting.</p><p>It was not just about learning new information — it was about changing the way I look at the city around me.</p>`},
+  {label:"Slide 6 — Week 2 Activities", text:`<p>The second week was more intense. I continued entering data, this time focusing on the <strong>"Anti-fascist Memories"</strong> category — street names dedicated to partisans and figures who resisted fascism.</p><p>I also had a session at the SIT office focused on <strong>technical training</strong>: learning how to trace road segments on ArcGIS. It sounds simple, but it requires a lot of attention — historical street names must match exactly with today's digital cartography, which has changed significantly.</p><p>But the most memorable moment of the week was attending a <strong>conference by historian Enrico Miletto</strong> on the World Wars. After the conference, I created a short summary video, which I edited myself — this was one of the most creative and exciting things I did during the entire internship.</p>`},
+  {label:"Slide 7 — Miletto Conference", text:`<p>I want to dedicate a separate slide to the Miletto conference because it was truly special.</p><p>Enrico Miletto is a historian who spoke about the effects and consequences of World War II — particularly how the war affected the urban and social life of Rimini. The city was one of the most heavily bombed in Italy, and this left a deep mark on its street names.</p><p>What made it particularly meaningful for me was that I was the only student from a lower year attending — the conference was mainly for Year 5 classes. Being included in that conversation felt like a privilege.</p><p>The conference directly inspired the <strong>video I made</strong> afterwards, where I tried to summarise the key themes in a way that could be shared with a wider audience. Seeing the connection between the names I was entering and the real historical events gave everything a new meaning.</p>`},
+  {label:"Slide 8 — Reflection Week 2", text:`<p>My keyword for the second week is <strong>Connection</strong>.</p><p>Before the Miletto conference, I was entering names into a database. After it, I was entering <em>people</em>. The conference gave me the historical context I was missing — I understood what life was like in Rimini during and after World War II, and suddenly the names I was working with felt completely different.</p><p>They were no longer just labels. They were connected to real events, real suffering, and real courage.</p><p>That shift in perspective was, for me, the most important moment of the entire FSL experience. And producing the video allowed me to communicate that emotion creatively — which is something I really enjoyed.</p>`},
+  {label:"Slide 9 — Week 3 Activities", text:`<p>The final week was focused on completing and reviewing everything.</p><p>I had a meeting at the SIT office to discuss the <strong>technical implementation of profile cards</strong> — each street name in ArcGIS can have a detailed profile card attached, and we worked on how to do this correctly.</p><p>I then spent several days doing a <strong>full revision</strong> of all the data I had entered, checking for errors. I also completed the Sources and Bibliography page for the StoryMap.</p><p>Using <strong>Google Sheets</strong>, I filtered the complete street list and created the statistical charts — like the pie chart you can see in this presentation — which were added to the StoryMap's statistics section.</p><p>One technical challenge was that it was impossible to automatically attach all profile cards to every street segment, so we had to find a <strong>manual workaround</strong> — which taught me that professional work always requires adaptability.</p>`},
+  {label:"Slide 10 — Reflection Week 3", text:`<p>My keyword for the third week is <strong>Precision</strong>.</p><p>When you work with historical data, being precise is not just about avoiding mistakes — it is about respecting the people whose stories you are telling. One wrong date, one wrong name, and you are distorting someone's memory.</p><p>I also realised something broader: a database is only useful if the data inside it is correct and well-organised. This week made me understand that careful, patient work is at the heart of everything historians and archivists do.</p><p>Looking at the statistics — <strong>53.7% of Rimini's street names are dedicated to personalities</strong> — made me realise how much a city's identity is shaped by the people it chooses to honour. That is a profound thought.</p>`},
+  {label:"Slide 11 — Historic Centre", text:`<p>This is the historic centre of Rimini — the area we worked on throughout the three weeks.</p><p>The city was heavily bombed during World War II, and much of the original urban fabric was destroyed and rebuilt. The 1945 urban plan was one of the key historical documents we consulted, because it helped us understand how post-war reconstruction changed the city's street names and its collective identity.</p><p>Every colour on this map tells a story. The red areas mark destroyed or damaged buildings. The green areas show public and private gardens that were preserved or created after the war.</p><p>When you walk through Rimini today, you are walking through layer upon layer of history — and our StoryMap tries to make that visible to everyone.</p>`},
+  {label:"Slide 12 — Final Reflection", text:`<p>Looking back at the three weeks, this FSL experience gave me much more than I expected.</p><p>On the positive side: I discovered how powerful GIS technology can be when used to make history accessible. I learned to work in a genuinely <strong>professional environment</strong> alongside historians, archivists and technical staff — very different from school. The conference video was a personal highlight, because it let me express creativity within a serious research project.</p><p>I also faced real challenges: finding images, dealing with technical limitations, managing accuracy and speed. But those challenges were just as valuable as the successes — they showed me that professional work is always more complex than it looks.</p><p>The evaluations I received — <strong>4 out of 4 from both tutors</strong> — mean a great deal to me, but what I value most is what I have learned about myself as a researcher and communicator.</p>`},
+  {label:"Slide 13 — Thank You", text:`<p>Thank you very much for your attention.</p><p>I hope this presentation gave you a sense of what these three weeks meant to me — not just as a professional experience, but as a personal one.</p><p>I want to say a special thank you to <strong>Alberto Gagliardo</strong> at ISREC, <strong>Gianluca Calbucci</strong> at the Gambalunga Library, and <strong>Alberto Vanni Lazzari</strong> at the SIT office — and to all the staff who welcomed me and guided me throughout this project.</p><p>I am happy to answer any questions you might have.</p>`}
+];
+
+// ── SLIDES ──
+const slides = document.querySelectorAll('.slide');
+const TOTAL = slides.length;
+let cur = 0;
+
+// Build sidebar dots
+const sbDotsEl = document.getElementById('sb-dots');
+for(let i=0;i<TOTAL;i++){
+  const d = document.createElement('button');
+  d.className='sdot'+(i===0?' active':'');
+  d.title='Slide '+(i+1);
+  d.onclick=()=>goTo(i);
+  sbDotsEl.appendChild(d);
+}
+
+function updateUI(){
+  document.getElementById('counter').textContent=(cur+1)+' / '+TOTAL;
+  document.querySelectorAll('.sdot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  document.getElementById('sp-label').textContent = speeches[cur].label;
+  document.getElementById('sp-body').innerHTML = speeches[cur].text;
+}
+
+function goTo(n){
+  slides[cur].classList.remove('active');
+  cur=(n+TOTAL)%TOTAL;
+  slides[cur].classList.add('active');
+  updateUI();
+}
+function go(d){goTo(cur+d);}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
+  if(e.key==='Escape')closeSpeech();
+});
+
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{const dx=tx-e.changedTouches[0].clientX;if(Math.abs(dx)>60)go(dx>0?1:-1);});
+
+// Speech panel
+function toggleSpeech(){document.getElementById('speech-panel').classList.toggle('open');}
+function closeSpeech(){document.getElementById('speech-panel').classList.remove('open');}
+
+// Fullscreen
+function toggleFS(){
+  if(!document.fullscreenElement){document.documentElement.requestFullscreen();}
+  else{document.exitFullscreen();}
+}
+
+updateUI();
+</script>
+</body>
+</html>
