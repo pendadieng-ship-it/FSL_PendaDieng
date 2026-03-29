@@ -72,35 +72,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
   padding:5px 16px;border-radius:50px;z-index:9998;
 }
 
-/* ── SPEECH PANEL ── */
-#speech-btn{
-  position:fixed;top:16px;right:16px;z-index:10000;
-  background:rgba(14,14,18,.8);backdrop-filter:blur(10px);
-  border:1px solid rgba(181,146,76,.35);border-radius:24px;
-  color:var(--gold);font-family:'DM Sans',sans-serif;font-size:11px;
-  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  padding:7px 16px;cursor:pointer;transition:all .3s;
-}
-#speech-btn:hover{background:rgba(181,146,76,.2);}
-#speech-panel{
-  position:fixed;top:0;right:0;width:400px;height:100vh;
-  background:linear-gradient(160deg,#0e0e12 0%,#1c1c2e 100%);
-  border-left:1px solid rgba(181,146,76,.2);z-index:10001;
-  transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);
-  display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.6);
-}
-#speech-panel.open{transform:translateX(0);}
-.sp-header{
-  padding:24px 24px 16px;border-bottom:1px solid rgba(181,146,76,.15);
-  display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
-}
-.sp-header h3{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
-.sp-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:22px;cursor:pointer;line-height:1;padding:2px;}
-.sp-close:hover{color:#fff;}
-.sp-title{padding:14px 24px 6px;font-size:10px;letter-spacing:.18em;color:var(--gold);opacity:.55;text-transform:uppercase;}
-.sp-body{flex:1;overflow-y:auto;padding:0 24px 80px;scrollbar-width:thin;scrollbar-color:rgba(181,146,76,.3) transparent;}
-.sp-body p{font-size:14px;line-height:1.85;color:#e0ceb8;margin-bottom:14px;}
-.sp-body p strong{color:var(--gold);}
+
 
 /* ── DECK & SLIDES ── */
 .deck{
@@ -145,16 +117,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
   <div class="sb-dots" id="sb-dots"></div>
   <button class="sb-next" onclick="go(1)" title="Next">▼</button>
 </nav>
-
-<!-- ══ SPEECH BUTTON ══ -->
-<button id="speech-btn" onclick="toggleSpeech()">🎤 Speech</button>
-
-<!-- ══ SPEECH PANEL ══ -->
-<div id="speech-panel">
-  <div class="sp-header">
-    <h3>Speaker Notes</h3>
-    <button class="sp-close" onclick="toggleSpeech()">✕</button>
-  </div>
   <div class="sp-title" id="sp-label">Slide 1</div>
   <div class="sp-body" id="sp-body"></div>
 </div>
@@ -580,22 +542,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
 <div id="counter">1 / 13</div>
 
 <script>
-// ── SPEECHES ──
-const speeches = [
-  {label:"Slide 1 — Cover", text:`<p>Good morning, everyone. My name is <strong>Dieng Penda</strong>, I am in class 4°G at the ITTS Belluzzi-Da Vinci in Rimini.</p><p>For my FSL this year, I spent three weeks at the Historical Institute of the Resistance and Contemporary History of the Province of Rimini — known as ISREC — working alongside the Gambalunga Library and the SIT office of the Municipality of Rimini.</p><p>The title of the project is <strong>"History in the Streets"</strong>, and it is about exploring what the street names of Rimini tell us about the city's past.</p>`},
-  {label:"Slide 2 — The Project", text:`<p>The project is called "History in the Streets" and it is a <strong>public history</strong> initiative — meaning history made accessible to everyone, not just academics.</p><p>The idea is simple but powerful: Rimini's street directory contains hundreds of names dedicated to historical figures, places, and events. Our task was to classify each street name by category, research the people or places behind the names, and then place them on an interactive digital map using <strong>ArcGIS and StoryMaps</strong>.</p><p>The final result will be published on the Municipality of Rimini's SIT portal, where any citizen can explore it.</p><p>We also produced a short summary video for a regional competition called <strong>"Quante storie nella Storia"</strong> — How Many Stories in History.</p>`},
-  {label:"Slide 3 — Digital Tools", text:`<p>During the three weeks, I worked with three main digital tools.</p><p>The first was <strong>ArcGIS Online</strong> with its Story Maps feature — this is a professional GIS platform by Esri that I used to geolocate every street name, trace the actual road segments on the map, and build the interactive StoryMap that will be published online.</p><p>The second was <strong>Google Sheets</strong>, which served as our shared database. I used it to collect and organise all the data — names, categories, biographies, image sources — and in the third week I used it to create statistical charts for the StoryMap.</p><p>The third tool was <strong>WordPress</strong>, the CMS of the ISREC website. I worked on the back-end to edit and update some institutional pages — a completely new experience for me.</p>`},
-  {label:"Slide 4 — Week 1 Activities", text:`<p>The first week began with an introduction to the project and the three partner institutions. My tutors explained the historical research methodology and walked me through ArcGIS and StoryMaps for the first time.</p><p>From day two, I started the <strong>data entry</strong>: I searched for biographies of historical figures whose names appear on Rimini's streets, and looked for photographs in physical archives and on trusted websites like ANPI, Treccani, and Quirinale.it.</p><p>Working in <strong>physical archives</strong> at the Gambalunga Library was a completely different experience from digital research. You have to be patient, because the results are never guaranteed.</p><p>One of the first challenges I faced was finding photographic material. For some figures, like <strong>Silvio Cenci</strong>, no photographs existed at all — which taught me early on that historical research is never straightforward.</p>`},
-  {label:"Slide 5 — Reflection Week 1", text:`<p>My keyword for the first week is <strong>Discovery</strong>.</p><p>Before this experience, I never really thought about the meaning behind street names. They were just labels on a map. But during this week, I started to see them differently — as small monuments, as choices a community made to honour someone.</p><p>Every time I researched a new name, I felt like I was opening a door into a story I had never heard before. Discovering how <strong>GIS technology</strong> can bring this history to life for everyone was genuinely exciting.</p><p>It was not just about learning new information — it was about changing the way I look at the city around me.</p>`},
-  {label:"Slide 6 — Week 2 Activities", text:`<p>The second week was more intense. I continued entering data, this time focusing on the <strong>"Anti-fascist Memories"</strong> category — street names dedicated to partisans and figures who resisted fascism.</p><p>I also had a session at the SIT office focused on <strong>technical training</strong>: learning how to trace road segments on ArcGIS. It sounds simple, but it requires a lot of attention — historical street names must match exactly with today's digital cartography, which has changed significantly.</p><p>But the most memorable moment of the week was attending a <strong>conference by historian Enrico Miletto</strong> on the World Wars. After the conference, I created a short summary video, which I edited myself — this was one of the most creative and exciting things I did during the entire internship.</p>`},
-  {label:"Slide 7 — Miletto Conference", text:`<p>I want to dedicate a separate slide to the Miletto conference because it was truly special.</p><p>Enrico Miletto is a historian who spoke about the effects and consequences of World War II — particularly how the war affected the urban and social life of Rimini. The city was one of the most heavily bombed in Italy, and this left a deep mark on its street names.</p><p>What made it particularly meaningful for me was that I was the only student from a lower year attending — the conference was mainly for Year 5 classes. Being included in that conversation felt like a privilege.</p><p>The conference directly inspired the <strong>video I made</strong> afterwards, where I tried to summarise the key themes in a way that could be shared with a wider audience. Seeing the connection between the names I was entering and the real historical events gave everything a new meaning.</p>`},
-  {label:"Slide 8 — Reflection Week 2", text:`<p>My keyword for the second week is <strong>Connection</strong>.</p><p>Before the Miletto conference, I was entering names into a database. After it, I was entering <em>people</em>. The conference gave me the historical context I was missing — I understood what life was like in Rimini during and after World War II, and suddenly the names I was working with felt completely different.</p><p>They were no longer just labels. They were connected to real events, real suffering, and real courage.</p><p>That shift in perspective was, for me, the most important moment of the entire FSL experience. And producing the video allowed me to communicate that emotion creatively — which is something I really enjoyed.</p>`},
-  {label:"Slide 9 — Week 3 Activities", text:`<p>The final week was focused on completing and reviewing everything.</p><p>I had a meeting at the SIT office to discuss the <strong>technical implementation of profile cards</strong> — each street name in ArcGIS can have a detailed profile card attached, and we worked on how to do this correctly.</p><p>I then spent several days doing a <strong>full revision</strong> of all the data I had entered, checking for errors. I also completed the Sources and Bibliography page for the StoryMap.</p><p>Using <strong>Google Sheets</strong>, I filtered the complete street list and created the statistical charts — like the pie chart you can see in this presentation — which were added to the StoryMap's statistics section.</p><p>One technical challenge was that it was impossible to automatically attach all profile cards to every street segment, so we had to find a <strong>manual workaround</strong> — which taught me that professional work always requires adaptability.</p>`},
-  {label:"Slide 10 — Reflection Week 3", text:`<p>My keyword for the third week is <strong>Precision</strong>.</p><p>When you work with historical data, being precise is not just about avoiding mistakes — it is about respecting the people whose stories you are telling. One wrong date, one wrong name, and you are distorting someone's memory.</p><p>I also realised something broader: a database is only useful if the data inside it is correct and well-organised. This week made me understand that careful, patient work is at the heart of everything historians and archivists do.</p><p>Looking at the statistics — <strong>53.7% of Rimini's street names are dedicated to personalities</strong> — made me realise how much a city's identity is shaped by the people it chooses to honour. That is a profound thought.</p>`},
-  {label:"Slide 11 — Historic Centre", text:`<p>This is the historic centre of Rimini — the area we worked on throughout the three weeks.</p><p>The city was heavily bombed during World War II, and much of the original urban fabric was destroyed and rebuilt. The 1945 urban plan was one of the key historical documents we consulted, because it helped us understand how post-war reconstruction changed the city's street names and its collective identity.</p><p>Every colour on this map tells a story. The red areas mark destroyed or damaged buildings. The green areas show public and private gardens that were preserved or created after the war.</p><p>When you walk through Rimini today, you are walking through layer upon layer of history — and our StoryMap tries to make that visible to everyone.</p>`},
-  {label:"Slide 12 — Final Reflection", text:`<p>Looking back at the three weeks, this FSL experience gave me much more than I expected.</p><p>On the positive side: I discovered how powerful GIS technology can be when used to make history accessible. I learned to work in a genuinely <strong>professional environment</strong> alongside historians, archivists and technical staff — very different from school. The conference video was a personal highlight, because it let me express creativity within a serious research project.</p><p>I also faced real challenges: finding images, dealing with technical limitations, managing accuracy and speed. But those challenges were just as valuable as the successes — they showed me that professional work is always more complex than it looks.</p><p>The evaluations I received — <strong>4 out of 4 from both tutors</strong> — mean a great deal to me, but what I value most is what I have learned about myself as a researcher and communicator.</p>`},
-  {label:"Slide 13 — Thank You", text:`<p>Thank you very much for your attention.</p><p>I hope this presentation gave you a sense of what these three weeks meant to me — not just as a professional experience, but as a personal one.</p><p>I want to say a special thank you to <strong>Alberto Gagliardo</strong> at ISREC, <strong>Gianluca Calbucci</strong> at the Gambalunga Library, and <strong>Alberto Vanni Lazzari</strong> at the SIT office — and to all the staff who welcomed me and guided me throughout this project.</p><p>I am happy to answer any questions you might have.</p>`}
-];
 
 // ── SLIDES ──
 const slides = document.querySelectorAll('.slide');
@@ -615,8 +561,7 @@ for(let i=0;i<TOTAL;i++){
 function updateUI(){
   document.getElementById('counter').textContent=(cur+1)+' / '+TOTAL;
   document.querySelectorAll('.sdot').forEach((d,i)=>d.classList.toggle('active',i===cur));
-  document.getElementById('sp-label').textContent = speeches[cur].label;
-  document.getElementById('sp-body').innerHTML = speeches[cur].text;
+  
 }
 
 function goTo(n){
@@ -630,16 +575,13 @@ function go(d){goTo(cur+d);}
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);
   if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
-  if(e.key==='Escape')closeSpeech();
+  if(e.key==='Escape')document.exitFullscreen&&document.exitFullscreen();
 });
 
 let tx=0;
 document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
 document.addEventListener('touchend',e=>{const dx=tx-e.changedTouches[0].clientX;if(Math.abs(dx)>60)go(dx>0?1:-1);});
 
-// Speech panel
-function toggleSpeech(){document.getElementById('speech-panel').classList.toggle('open');}
-function closeSpeech(){document.getElementById('speech-panel').classList.remove('open');}
 
 // Fullscreen
 function toggleFS(){
